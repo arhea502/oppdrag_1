@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ultimate Slot Machine 🎰</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+    body {
+      background: linear-gradient(135deg, #1e1e2f, #12121e);
+      color: #eee;
+      font-family: 'Orbitron', monospace, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #222233;
+      border-radius: 15px;
+      padding: 25px 30px 40px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 0 30px #00ffa5aa;
+      text-align: center;
+      user-select: none;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: #00ffb0;
+      text-shadow: 0 0 6px #00ffa5, 0 0 12px #00ffa5;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-right: 10px;
+      color: #55ffbd;
+    }
+
+    input[type="number"] {
+      width: 100px;
+      padding: 10px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      border: none;
+      text-align: center;
+      font-weight: 700;
+      color: #222;
+      outline-offset: 2px;
+      outline-color: #00ffb0;
+    }
+    input[type="number"]:focus {
+      outline-style: solid;
+    }
+
+    #errorMsg {
+      height: 22px;
+      color: #ff5050;
+      margin-top: 6px;
+      font-weight: 700;
+      min-height: 22px;
+      font-size: 0.9rem;
+      min-height: 24px;
+      user-select:none;
+    }
+
+    .slot-machine {
+      margin: 25px 0 20px;
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .slot {
+      background: #111122;
+      border-radius: 15px;
+      width: 90px;
+      height: 90px;
+      font-size: 4.5rem;
+      line-height: 90px;
+      box-shadow:
+        inset 0 0 15px #00ffb055,
+        0 0 8px #00ffb099;
+      color: #00ffb0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    /* Spin animation */
+    @keyframes spinAnim {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(30px); }
+      100% { transform: translateY(0); }
+    }
+    .spinning {
+      animation: spinAnim 0.2s ease-in-out infinite;
+      filter: drop-shadow(0 0 3px #00ffa099);
+    }
+
+    button {
+      background: #00ffb0;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #111;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      user-select: none;
+      box-shadow: 0 0 25px #00ffb088;
+    }
+    button:disabled {
+      background: #004d3b;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    button:hover:not(:disabled) {
+      background: #00cc8a;
+      box-shadow: 0 0 30px #00cc8aaa;
+    }
+
+    #result {
+      font-size: 1.3rem;
+      min-height: 36px;
+      margin: 20px 0 0;
+      font-weight: 700;
+      color: #00ffb0;
+      text-shadow: 0 0 6px #00ffa5aa;
+      user-select:none;
+    }
+
+    #balance {
+      font-weight: 900;
+      font-size: 1.7rem;
+      color: #55ffaa;
+      margin-top: 10px;
+      user-select:none;
+      text-shadow: 0 0 12px #33ffaaee;
+    }
+
+    canvas#moneyChart {
+      width: 100% !important;
+      height: 260px !important; /* increased height */
+      margin-top: 32px;
+      user-select:none;
+    }
+
+    /* Responsive */
+    @media (max-width: 520px) {
+      .slot {
+        width: 70px;
+        height: 70px;
+        font-size: 3.5rem;
+        line-height: 70px;
+      }
+      input[type="number"] {
+        width: 80px;
+        font-size: 1rem;
+      }
+      button {
+        font-size: 1.1rem;
+        padding: 12px 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main" aria-label="Slot machine game">
+    <h1>🎰 Ultimate Slot Machine</h1>
+
+    <label for="betInput">Bet Amount: $</label>
+    <input
+      type="number"
+      id="betInput"
+      min="1"
+      step="1"
+      value="10"
+      aria-describedby="errorMsg"
+      aria-invalid="false"
+    />
+    <div id="errorMsg" role="alert" aria-live="assertive"></div>
+
+    <div class="slot-machine" aria-live="polite" aria-atomic="true" aria-label="Slot reels">
+      <div id="slot1" class="slot" aria-label="Slot 1">🍒</div>
+      <div id="slot2" class="slot" aria-label="Slot 2">🍋</div>
+      <div id="slot3" class="slot" aria-label="Slot 3">🍊</div>
+    </div>
+
+    <button id="spinBtn" aria-label="Spin the slot machine">Spin</button>
+
+    <p id="result" aria-live="polite" aria-atomic="true">Good luck!</p>
+    <p>Balance: $<span id="balance">100</span></p>
+
+    <canvas id="moneyChart" aria-label="Line chart showing your balance over spins"></canvas>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    (() => {
+      // Elements
+      const slot1 = document.getElementById("slot1");
+      const slot2 = document.getElementById("slot2");
+      const slot3 = document.getElementById("slot3");
+      const resultText = document.getElementById("result");
+      const balanceDisplay = document.getElementById("balance");
+      const spinBtn = document.getElementById("spinBtn");
+      const betInput = document.getElementById("betInput");
+      const errorMsg = document.getElementById("errorMsg");
+
+      // Emojis with multipliers: triple and double
+      const emojiData = [
+        { emoji: "🍒", multiplier3: 2, multiplier2: 1 },
+        { emoji: "🍋", multiplier3: 3, multiplier2: 1.5 },
+        { emoji: "🍊", multiplier3: 4, multiplier2: 2 },
+        { emoji: "🍉", multiplier3: 5, multiplier2: 2 },
+        { emoji: "⭐", multiplier3: 10, multiplier2: 3 },
+        { emoji: "7️⃣", multiplier3: 20, multiplier2: 5 }
+      ];
+
+      // Storage keys
+      const STORAGE_BALANCE = 'ultimateSlotBalance';
+      const STORAGE_HISTORY = 'ultimateSlotHistory';
+
+      // Load or initialize balance
+      let balance = parseFloat(localStorage.getItem(STORAGE_BALANCE));
+      if (isNaN(balance) || balance < 1) balance = 100;
+
+      // Load or initialize history
+      let moneyHistory = JSON.parse(localStorage.getItem(STORAGE_HISTORY));
+      if (!Array.isArray(moneyHistory) || moneyHistory.length < 1) moneyHistory = [balance];
+
+      // Chart setup
+      const ctx = document.getElementById('moneyChart').getContext('2d');
+      const moneyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: moneyHistory.map((_, i) => i === 0 ? 'Start' : `Spin ${i}`),
+          datasets: [{
+            label: 'Balance Over Time',
+            data: moneyHistory,
+            borderColor: '#00ffb0',
+            borderWidth: 3,
+            fill: false,
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            backgroundColor: '#00ffb0',
+            hoverBackgroundColor: '#00ffa0'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#55ffbd',
+                font: { weight: 'bold', size: 14 },
+                maxTicksLimit: 8
+              },
+              grid: {
+                color: '#003300'
+              }
+            },
+            x: {
+              ticks: {
+                color: '#55ffbd',
+                font: { weight: 'bold', size: 12 },
+                maxRotation: 60,
+                minRotation: 45,
+                maxTicksLimit: 10,
+                autoSkip: true
+              },
+              grid: {
+                display: false
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#00ffb0',
+                font: { weight: 'bold', size: 16 }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#222233',
+              titleColor: '#00ffb0',
+              bodyColor: '#eee',
+              cornerRadius: 6,
+              displayColors: false
+            }
+          },
+          animation: {
+            duration: 600,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
+
+      // Initialize UI
+      balanceDisplay.textContent = balance.toFixed(2);
+
+      // Helper: get emoji info
+      function getEmojiInfo(e) {
+        return emojiData.find(obj => obj.emoji === e);
+      }
+
+      // Balanced random spin logic: weighted by rarity
+      // rarer emojis appear less frequently
+      // 🍒: common (30%)
+      // 🍋: common (25%)
+      // 🍊: uncommon (20%)
+      // 🍉: uncommon (12%)
+      // ⭐: rare (8%)
+      // 7️⃣: very rare (5%)
+      const weightedEmojis = [
+        ...Array(30).fill("🍒"),
+        ...Array(25).fill("🍋"),
+        ...Array(20).fill("🍊"),
+        ...Array(12).fill("🍉"),
+        ...Array(8).fill("⭐"),
+        ...Array(5).fill("7️⃣")
+      ];
+
+      // Function to spin once, return array of 3 emojis
+      function spinWithBalancedOdds() {
+        const pick = () => weightedEmojis[Math.floor(Math.random() * weightedEmojis.length)];
+        return [pick(), pick(), pick()];
+      }
+
+      // Animate the slot reels spin effect
+      function animateSlots(spinEmojis, callback) {
+        const slots = [slot1, slot2, slot3];
+        const totalFrames = 20;
+        let frame = 0;
+
+        spinBtn.disabled = true;
+        resultText.textContent = 'Spinning...';
+
+        function step() {
+          if (frame < totalFrames) {
+            slots.forEach(s => {
+              s.textContent = weightedEmojis[Math.floor(Math.random() * weightedEmojis.length)];
+              s.classList.add('spinning');
+            });
+            frame++;
+            setTimeout(step, 40);
+          } else {
+            slots.forEach((s, i) => {
+              s.textContent = spinEmojis[i];
+              s.classList.remove('spinning');
+            });
+            spinBtn.disabled = false;
+            if (callback) callback();
+          }
+        }
+        step();
+      }
+
+      // Calculate payout multiplier
+      // 3 matching emojis -> triple multiplier
+      // 2 matching emojis -> double multiplier
+      // else 0
+      function calculatePayout(spinEmojis) {
+        const [e1, e2, e3] = spinEmojis;
+        if (e1 === e2 && e2 === e3) {
+          return getEmojiInfo(e1)?.multiplier3 || 0;
+        } else if (e1 === e2 || e1 === e3) {
+          return getEmojiInfo(e1)?.multiplier2 || 0;
+        } else if (e2 === e3) {
+          return getEmojiInfo(e2)?.multiplier2 || 0;
+        } else {
+          return 0;
+        }
+      }
+
+      // Spin button click handler
+      spinBtn.addEventListener('click', () => {
+        let bet = parseFloat(betInput.value);
+
+        // Validate bet input
+        if (isNaN(bet) || bet < 1) {
+          errorMsg.textContent = "Please enter a valid bet of at least $1.";
+          betInput.setAttribute('aria-invalid', 'true');
+          return;
+        }
+        if (bet > balance) {
+          errorMsg.textContent = "You can't bet more than your current balance.";
+          betInput.setAttribute('aria-invalid', 'true');
+          return;
+        }
+        errorMsg.textContent = "";
+        betInput.setAttribute('aria-invalid', 'false');
+
+        const spinResult = spinWithBalancedOdds();
+
+        animateSlots(spinResult, () => {
+          const multiplier = calculatePayout(spinResult);
+          const winAmount = bet * multiplier;
+
+          balance = +(balance - bet + winAmount).toFixed(2);
+          balanceDisplay.textContent = balance.toFixed(2);
+
+          moneyHistory.push(balance);
+          localStorage.setItem(STORAGE_BALANCE, balance);
+          localStorage.setItem(STORAGE_HISTORY, JSON.stringify(moneyHistory));
+
+          moneyChart.data.labels.push(`Spin ${moneyHistory.length - 1}`);
+          moneyChart.data.datasets[0].data.push(balance);
+          moneyChart.update();
+
+          const emojiStr = spinResult.join(" ");
+          if (multiplier > 0) {
+            resultText.style.color = "#00ffb0";
+            resultText.textContent = `🎉 You spun ${emojiStr} and won $${winAmount.toFixed(2)} (${multiplier}×)!`;
+          } else {
+            resultText.style.color = "#ff5050";
+            resultText.textContent = `😞 You spun ${emojiStr} and lost $${bet.toFixed(2)}. Try again!`;
+          }
+
+          if (balance < 1) {
+            spinBtn.disabled = true;
+            resultText.textContent += " Game over! Please reload to play again.";
+            resultText.style.color = "#ff3333";
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
